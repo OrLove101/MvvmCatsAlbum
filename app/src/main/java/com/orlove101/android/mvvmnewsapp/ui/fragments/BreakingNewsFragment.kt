@@ -3,7 +3,6 @@ package com.orlove101.android.mvvmnewsapp.ui.fragments
 import android.Manifest
 import android.animation.*
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
@@ -11,7 +10,6 @@ import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,9 +17,6 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.AbsListView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.animation.doOnCancel
-import androidx.core.animation.doOnEnd
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -315,7 +310,9 @@ class BreakingNewsFragment: Fragment() {
 
             // Add the image to the system gallery
             galleryAddPic(savedImagePath)
-            // Toast.makeText(requireContext(), "IMAGE SAVED", Toast.LENGTH_LONG).show()
+            activity?.runOnUiThread {
+                Toast.makeText(activity, "Image Saved!", Toast.LENGTH_SHORT).show()
+            }
         }
         return savedImagePath
     }
