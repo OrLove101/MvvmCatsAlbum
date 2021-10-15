@@ -6,4 +6,5 @@ import javax.inject.Inject
 
 @HiltAndroidApp
 class CatsApplication @Inject constructor() : Application() {
+    // changes to pr
 }
