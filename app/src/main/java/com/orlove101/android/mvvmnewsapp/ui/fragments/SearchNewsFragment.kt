@@ -99,6 +99,7 @@ class SearchNewsFragment: Fragment() {
             }
         }
         newsAdapter.setOnItemClickListener {
+            // TODO remove to viewModels event
             val bundle = Bundle().apply {
                 putSerializable("article", it)
             }

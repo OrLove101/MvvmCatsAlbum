@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,17 +18,19 @@ import com.orlove101.android.mvvmnewsapp.data.models.Article
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentSavedNewsBinding
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsAdapter
+import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsLoaderStateAdapter
 import com.orlove101.android.mvvmnewsapp.ui.viewModels.NewsViewModel
 import com.orlove101.android.mvvmnewsapp.util.autoCleared
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class SavedNewsFragment: Fragment() {
     private var binding by autoCleared<FragmentSavedNewsBinding>()
     private val viewModel: NewsViewModel by viewModels()
-
-    // TODO make another adapter for saved news
-    private var newsAdapter: NewsAdapter? = null
+    private val newsAdapter by lazy(LazyThreadSafetyMode.NONE) {
+        NewsAdapter()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,33 +41,21 @@ class SavedNewsFragment: Fragment() {
 
         setupRecyclerView()
 
+        lifecycleScope.launchWhenCreated {
+            viewModel.savedNews.collectLatest(newsAdapter::submitData)
+        }
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // TODO implement above todo
-        newsAdapter?.setOnItemClickListener {
-            val bundle = Bundle().apply {
-                putSerializable("article", it)
-            }
-            findNavController().navigate(
-                R.id.action_savedNewsFragment_to_articleFragment,
-                bundle
-            )
-        }
-
         val itemTouchHelperCallback = getItemTouchHelper()
 
         ItemTouchHelper(itemTouchHelperCallback).apply {
             attachToRecyclerView(binding.rvSavedNews)
         }
-
-        viewModel.savedNews.observe(viewLifecycleOwner, Observer { articles ->
-            // TODO implement above todo
-            //newsAdapter?.differ?.submitList(articles)
-        })
     }
 
     private fun getItemTouchHelper(): ItemTouchHelper.SimpleCallback {
@@ -82,17 +73,19 @@ class SavedNewsFragment: Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                //val article = newsAdapter?.differ?.currentList?.get(position)
-                val article = newsAdapter?.snapshot()?.get(position)
+                val article = newsAdapter.snapshot()[position]
 
                 article?.let {
                     viewModel.deleteArticle(it)
+
+                    // TODO remove this function in viewModels deleteArticle function
                     showArticleDeletedSnackbar(article)
                 }
             }
         }
     }
 
+    // TODO remove to viewModel (todo that above)
     private fun showArticleDeletedSnackbar(article: Article) {
         view?.let {
             Snackbar.make(it, "Successfully deleted article", Snackbar.LENGTH_LONG).apply {
@@ -105,10 +98,22 @@ class SavedNewsFragment: Fragment() {
     }
 
     private fun setupRecyclerView() {
-        newsAdapter = NewsAdapter()
         binding.rvSavedNews.apply {
-            adapter = newsAdapter
+            adapter = newsAdapter.withLoadStateHeaderAndFooter(
+                header = NewsLoaderStateAdapter(),
+                footer = NewsLoaderStateAdapter()
+            )
             layoutManager = LinearLayoutManager(activity)
+        }
+        newsAdapter.setOnItemClickListener {
+            // TODO remove to viewModel events
+            val bundle = Bundle().apply {
+                putSerializable("article", it)
+            }
+            findNavController().navigate(
+                R.id.action_savedNewsFragment_to_articleFragment,
+                bundle
+            )
         }
     }
 }

@@ -2,14 +2,14 @@ package com.orlove101.android.mvvmnewsapp.data.api
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.orlove101.android.mvvmnewsapp.data.db.ArticleDatabase
 import com.orlove101.android.mvvmnewsapp.data.models.Article
 import com.orlove101.android.mvvmnewsapp.util.QUERY_PAGE_SIZE
+import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 
-private const val TAG = "BreakingNewsPageSource"
-
-class BreakingNewsPageSource(
-    private val newsApi: NewsAPI
+class SavedNewsPageSource(
+    private val db: ArticleDatabase
 ): PagingSource<Int, Article>() {
 
     override fun getRefreshKey(state: PagingState<Int, Article>): Int? {
@@ -20,15 +20,17 @@ class BreakingNewsPageSource(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Article> {
         val page: Int = params.key ?: 1
-        val response = newsApi.getBreakingNews(pageNumber = page)
+        val getFrom: Int = page.minus(1) * 20
+        val articles = db
+            .getArticleDao()
+            .getArticles(
+                getFrom = getFrom,
+                pageSize = QUERY_PAGE_SIZE
+            )
+            .first()
+        val nextKey = if (articles.size < QUERY_PAGE_SIZE) null else page + 1;
+        val prevKey = if (page == 1) null else page - 1;
 
-        if (response.isSuccessful) {
-            val articles = checkNotNull(response.body()).articles.toList()
-            val nextKey = if (articles.size < QUERY_PAGE_SIZE) null else page + 1;
-            val prevKey = if (page == 1) null else page - 1;
-
-            return LoadResult.Page(articles, prevKey, nextKey)
-        }
-        return LoadResult.Error(HttpException(response))
+        return LoadResult.Page(articles, prevKey, nextKey)
     }
 }

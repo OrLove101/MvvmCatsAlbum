@@ -9,8 +9,8 @@ interface ArticleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(article: Article): Long
 
-    @Query("SELECT * FROM articles")
-    fun getAllArticles(): Flow<List<Article>>
+    @Query("SELECT * FROM articles LIMIT :pageSize OFFSET :getFrom")
+    fun getArticles(getFrom: Int, pageSize: Int): Flow<List<Article>>
 
     @Delete
     suspend fun deleteArticle(article: Article)
