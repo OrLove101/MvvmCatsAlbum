@@ -17,21 +17,5 @@ import javax.inject.Provider
 )
 @TypeConverters(Converters::class)
 abstract class ArticleDatabase: RoomDatabase() {
-
     abstract fun getArticleDao(): ArticleDao
-
-    class Callback @Inject constructor(
-        private val database: Provider<ArticleDatabase>,
-        @ApplicationScope private val applicationScope: CoroutineScope
-    ): RoomDatabase.Callback() {
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
-
-            val dao = database.get().getArticleDao()
-
-            applicationScope.launch {
-                // upsert in database for example
-            }
-        }
-    }
 }

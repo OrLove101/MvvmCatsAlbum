@@ -13,17 +13,20 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.orlove101.android.mvvmnewsapp.R
+import com.orlove101.android.mvvmnewsapp.data.models.Article
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentSavedNewsBinding
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsAdapter
 import com.orlove101.android.mvvmnewsapp.ui.viewModels.NewsViewModel
+import com.orlove101.android.mvvmnewsapp.util.autoCleared
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SavedNewsFragment: Fragment() {
-    private var _binding: FragmentSavedNewsBinding? = null
-    private val binding get() = _binding!!
+    private var binding by autoCleared<FragmentSavedNewsBinding>()
     private val viewModel: NewsViewModel by viewModels()
+
+    // TODO make another adapter for saved news
     private var newsAdapter: NewsAdapter? = null
 
     override fun onCreateView(
@@ -31,7 +34,7 @@ class SavedNewsFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSavedNewsBinding.inflate(inflater, container, false)
+        binding = FragmentSavedNewsBinding.inflate(inflater, container, false)
 
         setupRecyclerView()
 
@@ -41,6 +44,7 @@ class SavedNewsFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // TODO implement above todo
         newsAdapter?.setOnItemClickListener {
             val bundle = Bundle().apply {
                 putSerializable("article", it)
@@ -51,7 +55,20 @@ class SavedNewsFragment: Fragment() {
             )
         }
 
-        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
+        val itemTouchHelperCallback = getItemTouchHelper()
+
+        ItemTouchHelper(itemTouchHelperCallback).apply {
+            attachToRecyclerView(binding.rvSavedNews)
+        }
+
+        viewModel.savedNews.observe(viewLifecycleOwner, Observer { articles ->
+            // TODO implement above todo
+            //newsAdapter?.differ?.submitList(articles)
+        })
+    }
+
+    private fun getItemTouchHelper(): ItemTouchHelper.SimpleCallback {
+        return object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
@@ -65,26 +82,26 @@ class SavedNewsFragment: Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-                val article = newsAdapter?.differ?.currentList?.get(position)
+                //val article = newsAdapter?.differ?.currentList?.get(position)
+                val article = newsAdapter?.snapshot()?.get(position)
 
-                article?.let { viewModel.deleteArticle(it) }
-
-                Snackbar.make(view, "Successfully deleted article", Snackbar.LENGTH_LONG).apply {
-                    setAction("Undo") {
-                        article?.let { viewModel.saveArticle(it) }
-                    }
-                    show()
+                article?.let {
+                    viewModel.deleteArticle(it)
+                    showArticleDeletedSnackbar(article)
                 }
             }
         }
+    }
 
-        ItemTouchHelper(itemTouchHelperCallback).apply {
-            attachToRecyclerView(binding.rvSavedNews)
+    private fun showArticleDeletedSnackbar(article: Article) {
+        view?.let {
+            Snackbar.make(it, "Successfully deleted article", Snackbar.LENGTH_LONG).apply {
+                setAction("Undo") {
+                    article.let { viewModel.saveArticle(it) }
+                }
+                show()
+            }
         }
-
-        viewModel.savedNews.observe(viewLifecycleOwner, Observer { articles ->
-            newsAdapter?.differ?.submitList(articles)
-        })
     }
 
     private fun setupRecyclerView() {
@@ -93,10 +110,5 @@ class SavedNewsFragment: Fragment() {
             adapter = newsAdapter
             layoutManager = LinearLayoutManager(activity)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

@@ -12,12 +12,12 @@ import com.google.android.material.snackbar.Snackbar
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentArticleBinding
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.orlove101.android.mvvmnewsapp.ui.viewModels.NewsViewModel
+import com.orlove101.android.mvvmnewsapp.util.autoCleared
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ArticleFragment: Fragment() {
-    private var _binding: FragmentArticleBinding? = null
-    private val binding get() = _binding!!
+    private var binding by autoCleared<FragmentArticleBinding>()
     private val viewModel: NewsViewModel by viewModels()
     val args: ArticleFragmentArgs by navArgs()
 
@@ -26,7 +26,7 @@ class ArticleFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentArticleBinding.inflate(inflater, container, false)
+        binding = FragmentArticleBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -45,10 +45,5 @@ class ArticleFragment: Fragment() {
             Snackbar.make(view, "Article saved successfully", Snackbar.LENGTH_SHORT).show()
             // TODO make snackbar through event
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

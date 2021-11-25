@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    compileSdk 30
+    compileSdk 31
 
     defaultConfig {
         applicationId "com.orlove101.android.mvvmnewsapp"
@@ -46,6 +46,10 @@ dependencies {
     def hilt_version = "2.37"
     def lifecycle_version = "2.3.1"
     def data_storage_version = "1.0.0-beta02"
+    def paging_version = "3.1.0"
+
+    //Paging 3
+    implementation "androidx.paging:paging-runtime:$paging_version"
 
     //Navigation
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
@@ -57,6 +61,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     // Lifecycles only (without ViewModel or LiveData)
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
 
     // ROOM
     implementation "androidx.room:room-runtime:$room_version"
