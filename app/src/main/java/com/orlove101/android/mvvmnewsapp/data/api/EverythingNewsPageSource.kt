@@ -3,7 +3,7 @@ package com.orlove101.android.mvvmnewsapp.data.api
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.orlove101.android.mvvmnewsapp.data.models.Article
-import com.orlove101.android.mvvmnewsapp.util.QUERY_PAGE_SIZE
+import com.orlove101.android.mvvmnewsapp.utils.QUERY_PAGE_SIZE
 import retrofit2.HttpException
 
 class EverythingNewsPageSource(

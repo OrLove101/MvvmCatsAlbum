@@ -2,14 +2,11 @@ package com.orlove101.android.mvvmnewsapp.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.orlove101.android.mvvmnewsapp.R
 import com.orlove101.android.mvvmnewsapp.databinding.ActivityNewsBinding
-import com.orlove101.android.mvvmnewsapp.ui.viewModels.NewsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

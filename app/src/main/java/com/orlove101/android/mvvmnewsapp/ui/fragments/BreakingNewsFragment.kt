@@ -1,11 +1,7 @@
 package com.orlove101.android.mvvmnewsapp.ui.fragments
 
 import android.Manifest
-import android.content.Intent
-import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -20,23 +16,14 @@ import androidx.navigation.fragment.findNavController
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
-import com.orlove101.android.mvvmnewsapp.R
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsAdapter
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsLoaderStateAdapter
 import com.orlove101.android.mvvmnewsapp.ui.viewModels.NewsViewModel
-import com.orlove101.android.mvvmnewsapp.util.autoCleared
+import com.orlove101.android.mvvmnewsapp.utils.autoCleared
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
-import java.util.*
 
 @AndroidEntryPoint
 class BreakingNewsFragment: Fragment() {
@@ -93,15 +80,8 @@ class BreakingNewsFragment: Fragment() {
                 paginationProgressBar.isVisible = state.refresh == LoadState.Loading
             }
         }
-        newsAdapter.setOnItemClickListener {
-            // TODO make from viewModels event
-            val bundle = Bundle().apply {
-                putSerializable("article", it)
-            }
-            findNavController().navigate(
-                R.id.action_breakingNewsFragment_to_articleFragment,
-                bundle
-            )
+        newsAdapter.setOnItemClickListener { article ->
+            viewModel.onNewsSelected(article)
         }
         newsAdapter.setOnImageClickListener { imageView, imageUrl ->
             imageView.setOnLongClickListener {
@@ -115,8 +95,16 @@ class BreakingNewsFragment: Fragment() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.newsEvent.collect { event ->
                 when (event) {
-                    is NewsViewModel.NewsEvent.ShowMessage -> {
-                        Toast.makeText(activity, event.msg, Toast.LENGTH_SHORT).show()
+                    is NewsViewModel.NewsEvent.ShowToastMessage -> {
+                        val message = getString(event.msgId)
+
+                        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+                    }
+                    is NewsViewModel.NewsEvent.NavigateToArticleScreen -> {
+                        val action = BreakingNewsFragmentDirections
+                            .actionBreakingNewsFragmentToArticleFragment(event.article)
+
+                        findNavController().navigate(action)
                     }
                 }
             }

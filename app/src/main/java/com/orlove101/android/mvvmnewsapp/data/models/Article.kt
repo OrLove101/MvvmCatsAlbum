@@ -3,7 +3,6 @@ package com.orlove101.android.mvvmnewsapp.data.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.io.Serializable
-import java.security.PrivateKey
 
 @Entity(
     tableName = "articles"

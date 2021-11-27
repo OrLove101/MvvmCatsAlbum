@@ -6,21 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.orlove101.android.mvvmnewsapp.R
-import com.orlove101.android.mvvmnewsapp.data.models.Article
-import com.orlove101.android.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentSavedNewsBinding
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsAdapter
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsLoaderStateAdapter
 import com.orlove101.android.mvvmnewsapp.ui.viewModels.NewsViewModel
-import com.orlove101.android.mvvmnewsapp.util.autoCleared
+import com.orlove101.android.mvvmnewsapp.utils.autoCleared
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 
@@ -44,6 +40,8 @@ class SavedNewsFragment: Fragment() {
         lifecycleScope.launchWhenCreated {
             viewModel.savedNews.collectLatest(newsAdapter::submitData)
         }
+
+        newsEventHandler()
 
         return binding.root
     }
@@ -75,24 +73,7 @@ class SavedNewsFragment: Fragment() {
                 val position = viewHolder.adapterPosition
                 val article = newsAdapter.snapshot()[position]
 
-                article?.let {
-                    viewModel.deleteArticle(it)
-
-                    // TODO remove this function in viewModels deleteArticle function
-                    showArticleDeletedSnackbar(article)
-                }
-            }
-        }
-    }
-
-    // TODO remove to viewModel (todo that above)
-    private fun showArticleDeletedSnackbar(article: Article) {
-        view?.let {
-            Snackbar.make(it, "Successfully deleted article", Snackbar.LENGTH_LONG).apply {
-                setAction("Undo") {
-                    article.let { viewModel.saveArticle(it) }
-                }
-                show()
+                article?.let { viewModel.deleteArticle(it) }
             }
         }
     }
@@ -105,15 +86,32 @@ class SavedNewsFragment: Fragment() {
             )
             layoutManager = LinearLayoutManager(activity)
         }
-        newsAdapter.setOnItemClickListener {
-            // TODO remove to viewModel events
-            val bundle = Bundle().apply {
-                putSerializable("article", it)
+        newsAdapter.setOnItemClickListener { article ->
+            viewModel.onNewsSelected(article)
+        }
+    }
+
+    private fun newsEventHandler() {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.newsEvent.collectLatest { event ->
+                when(event) {
+                    is NewsViewModel.NewsEvent.NavigateToArticleScreen -> {
+                        val action = SavedNewsFragmentDirections
+                            .actionSavedNewsFragmentToArticleFragment(event.article)
+
+                        findNavController().navigate(action)
+                    }
+                    is NewsViewModel.NewsEvent.ShowArticleDeletedSnackbar -> {
+                        Snackbar.make(binding.root, getString(event.msgId), Snackbar.LENGTH_LONG)
+                            .apply {
+                                setAction(getString(event.actonMsgId)) {
+                                    viewModel.saveArticle(event.article)
+                                }
+                                show()
+                            }
+                    }
+                }
             }
-            findNavController().navigate(
-                R.id.action_savedNewsFragment_to_articleFragment,
-                bundle
-            )
         }
     }
 }

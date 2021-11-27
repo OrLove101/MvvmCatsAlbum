@@ -1,7 +1,7 @@
 package com.orlove101.android.mvvmnewsapp.data.api
 
 import com.orlove101.android.mvvmnewsapp.data.models.NewsResponse
-import com.orlove101.android.mvvmnewsapp.util.API_KEY
+import com.orlove101.android.mvvmnewsapp.utils.API_KEY
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

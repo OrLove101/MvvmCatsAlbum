@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">MVVMNewsApp</string>
+    <string name="image_saved">Image Saved!</string>
+    <string name="delete_article_snackbar_msg">Successfully deleted article</string>
+    <string name="delete_article_snackbar_action">Undo</string>
+    <string name="favorite_news_bottombar_title">Favorite News</string>
+    <string name="breaking_news_bottombar_title">Breaking News</string>
+    <string name="find_news_bottombar_title">Find News</string>
+    <!-- Preference Titles -->
+    <string name="settings_title">Settings</string>
+    <string name="theme_title">Dark Theme</string>
 </resources>

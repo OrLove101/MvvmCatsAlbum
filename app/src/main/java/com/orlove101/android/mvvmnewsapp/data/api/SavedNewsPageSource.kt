@@ -4,9 +4,8 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.orlove101.android.mvvmnewsapp.data.db.ArticleDatabase
 import com.orlove101.android.mvvmnewsapp.data.models.Article
-import com.orlove101.android.mvvmnewsapp.util.QUERY_PAGE_SIZE
+import com.orlove101.android.mvvmnewsapp.utils.QUERY_PAGE_SIZE
 import kotlinx.coroutines.flow.first
-import retrofit2.HttpException
 
 class SavedNewsPageSource(
     private val db: ArticleDatabase

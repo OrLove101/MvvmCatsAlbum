@@ -47,6 +47,14 @@ dependencies {
     def lifecycle_version = "2.3.1"
     def data_storage_version = "1.0.0-beta02"
     def paging_version = "3.1.0"
+    def preference_version = "1.1.0"
+
+    // DAGGER_HILT
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    //Preference
+    implementation "androidx.preference:preference-ktx:$preference_version"
 
     //Paging 3
     implementation "androidx.paging:paging-runtime:$paging_version"
@@ -70,10 +78,6 @@ dependencies {
 
     // DATA STORAGE
     implementation "androidx.datastore:datastore-preferences:$data_storage_version"
-
-    // DAGGER_HILT
-    implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-compiler:$hilt_version"
 
     // RETROFIT
     implementation 'com.squareup.retrofit2:retrofit:2.6.0'

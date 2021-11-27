@@ -1,38 +1,30 @@
 package com.orlove101.android.mvvmnewsapp.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AbsListView
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.orlove101.android.mvvmnewsapp.R
-import com.orlove101.android.mvvmnewsapp.databinding.FragmentBreakingNewsBinding
 import com.orlove101.android.mvvmnewsapp.databinding.FragmentSearchNewsBinding
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsAdapter
 import com.orlove101.android.mvvmnewsapp.ui.adapters.NewsLoaderStateAdapter
 import com.orlove101.android.mvvmnewsapp.ui.viewModels.NewsViewModel
-import com.orlove101.android.mvvmnewsapp.util.QUERY_PAGE_SIZE
-import com.orlove101.android.mvvmnewsapp.util.Resource
-import com.orlove101.android.mvvmnewsapp.util.SEARCH_NEWS_TIME_DELAY
-import com.orlove101.android.mvvmnewsapp.util.autoCleared
+import com.orlove101.android.mvvmnewsapp.utils.SEARCH_NEWS_TIME_DELAY
+import com.orlove101.android.mvvmnewsapp.utils.autoCleared
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -55,9 +47,10 @@ class SearchNewsFragment: Fragment() {
 
         setupSearch()
 
+        newsEventHandler()
+
         lifecycleScope.launchWhenStarted {
-            viewModel.searchNews
-                .collectLatest(newsAdapter::submitData)
+            viewModel.searchNews.collectLatest(newsAdapter::submitData)
         }
 
         lifecycleScope.launchWhenCreated {
@@ -98,17 +91,8 @@ class SearchNewsFragment: Fragment() {
                 paginationProgressBar.isVisible = state.refresh == LoadState.Loading
             }
         }
-        newsAdapter.setOnItemClickListener {
-            // TODO remove to viewModels event
-            val bundle = Bundle().apply {
-                putSerializable("article", it)
-            }
-
-            // TODO make separate class to navigation
-            findNavController().navigate(
-                R.id.action_searchNewsFragment_to_articleFragment,
-                bundle
-            )
+        newsAdapter.setOnItemClickListener { article ->
+            viewModel.onNewsSelected(article)
         }
     }
 
@@ -116,6 +100,20 @@ class SearchNewsFragment: Fragment() {
         with(binding.etSearch) {
             if ((text?.toString() ?: "") != searchQuery) {
                 setText(searchQuery)
+            }
+        }
+    }
+
+    private fun newsEventHandler() {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.newsEvent.collect {event ->
+                when(event) {
+                    is NewsViewModel.NewsEvent.NavigateToArticleScreen -> {
+                        val action = SearchNewsFragmentDirections
+                            .actionSearchNewsFragmentToArticleFragment(event.article)
+                        findNavController().navigate(action)
+                    }
+                }
             }
         }
     }

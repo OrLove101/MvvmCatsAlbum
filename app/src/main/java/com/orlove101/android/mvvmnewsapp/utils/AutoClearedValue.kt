@@ -1,4 +1,4 @@
-package com.orlove101.android.mvvmnewsapp.util
+package com.orlove101.android.mvvmnewsapp.utils
 
 import androidx.fragment.app.Fragment
 import kotlin.properties.ReadWriteProperty
